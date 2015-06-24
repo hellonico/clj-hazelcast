@@ -72,3 +72,20 @@
                  res (.get fut 2 TimeUnit/SECONDS)]
              (log/infof "Result %s" res)
              res)))))
+
+(comment
+
+  (reset! hz1 (hz/make-hazelcast config))
+  (reset! hz2 (hz/make-hazelcast config))
+  (reset! distributed-map (with-hz-binding hz1 (hz/get-map "distributed-map")))
+
+  (with-hz-binding hz1 (hz/put! @distributed-map :sentence1 "the quick brown fox jumps over the lazy dog"))
+  (with-hz-binding hz2 (hz/put! @distributed-map :sentence2 "the fox and the hound"))
+  (with-hz-binding hz2 (hz/put! @distributed-map :sentence3 "nico is on his way to get coffee"))
+
+         (let [tracker (mr/make-job-tracker @hz1)
+               fut (mr/submit-job {:map @distributed-map :mapper-fn mapper1 :reducer-fn reducer1 :tracker tracker})
+               res (.get fut 2 TimeUnit/SECONDS)]
+           (log/infof "Result %s" res))
+
+  )
